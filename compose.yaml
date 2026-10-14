@@ -1,0 +1,74 @@
+services:
+  jp:
+    pull_policy: never
+    image: dockerjp
+    container_name: dockerjp
+    hostname: dockerjp
+    restart: unless-stopped
+    user: root
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - 8000:8000
+    env_file:
+      - ./env/.env
+    depends_on:
+      psql:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync+restart # this depends on the project
+          path: .
+          target: /app
+
+          ignore:
+            - .venv/
+            - __pycache__/
+
+        - action: rebuild
+          path: ./uv.lock
+    volumes:
+        - static_volume:/app/src/static
+        - media_volume:/app/src/media
+
+  ################################################################################
+
+  psql:
+    container_name: psql
+    hostname: psql
+    image: postgres:18
+    user: root
+    restart: unless-stopped
+    env_file:
+      - ./env/.env
+    volumes:
+      - pg_data:/var/lib/postgresql
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  pgadmin:
+    image: dpage/pgadmin4:9.14.0
+    restart: always
+    env_file:
+      - ./env/.env
+    ports:
+      - "8080:80"
+    depends_on:
+      psql:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  pg_data:
+  pgadmin_data:
+  static_volume:
+  media_volume:

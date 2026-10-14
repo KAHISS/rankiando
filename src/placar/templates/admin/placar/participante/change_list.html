@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="messagelist">
+        <div id="total-pontos"
+             data-url="{% url 'admin:placar_participante_total_pontos' %}"
+             role="status">
+            Pontuação total: <strong id="total-pontos-valor">{{ total_pontos }}</strong> pontos
+        </div>
+    </div>
+    {{ block.super }}
+    <script src="{% static 'placar/admin_points.js' %}" defer></script>
+{% endblock %}

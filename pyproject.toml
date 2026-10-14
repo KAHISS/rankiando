@@ -1,0 +1,21 @@
+[project]
+name = "jp-sys"
+version = "0.1.0"
+description = "Sistema desenvolvido para JP acessórios, usando python, uv e docker"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=6.0.3",
+    "django-mirage-field>=1.0.0",
+    "django-environ>=0.13.0",
+    "django-filter>=25.2",
+    "gunicorn>=26.0.0",
+    "pillow>=12.2.0",
+    "psycopg2-binary>=2.9.11",
+    "cryptography>=50.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

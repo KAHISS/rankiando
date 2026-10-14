@@ -1,0 +1,95 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101827">
+    <title>Placar da comunidade</title>
+    <link rel="stylesheet" href="{% static 'placar/style.css' %}">
+</head>
+<body>
+    <main class="layout">
+        <header class="hero">
+            <span class="eyebrow">PLACAR DA COMUNIDADE</span>
+            <h1>Todo ponto conta.</h1>
+            <p>Entre no placar e acompanhe a disputa em tempo real.</p>
+            {% if request.user.is_authenticated and request.user.is_staff %}
+                <a class="staff-link" href="{% url 'placar:gerenciar_pontos' %}">Gerenciar pontuações →</a>
+            {% endif %}
+        </header>
+
+        <section class="panel signup" aria-labelledby="signup-title">
+            <div>
+                <span class="eyebrow">NOVO POR AQUI?</span>
+                <h2 id="signup-title">Entre no ranking</h2>
+                {% if participante_do_navegador %}
+                    <p>Este navegador já possui um cadastro.</p>
+                {% else %}
+                    <p>Cadastre seu nome para aparecer na tabela. É permitido um cadastro por navegador.</p>
+                {% endif %}
+            </div>
+            {% if participante_do_navegador %}
+                <div class="signup-result">
+                    <p>Cadastrado como <strong>{{ participante_do_navegador.nome }}</strong>.</p>
+                    {% if form.non_field_errors %}
+                        <p class="form-error" role="alert">{{ form.non_field_errors|striptags }}</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <form method="post" class="signup-form">
+                    {% csrf_token %}
+                    <label for="{{ form.nome.id_for_label }}">Seu nome</label>
+                    <div class="form-row">
+                        {{ form.nome }}
+                        <button type="submit">Participar <span aria-hidden="true">→</span></button>
+                    </div>
+                    {% if form.nome.errors %}
+                        <p class="form-error" role="alert">{{ form.nome.errors|striptags }}</p>
+                    {% endif %}
+                    {% if form.non_field_errors %}
+                        <p class="form-error" role="alert">{{ form.non_field_errors|striptags }}</p>
+                    {% endif %}
+                </form>
+            {% endif %}
+        </section>
+
+        {% if messages %}
+            <div class="notices" role="status">
+                {% for message in messages %}<p>{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="panel ranking" aria-labelledby="ranking-title">
+            <div class="ranking-heading">
+                <div>
+                    <span class="eyebrow">CLASSIFICAÇÃO</span>
+                    <h2 id="ranking-title">Ranking</h2>
+                </div>
+                <span class="live-indicator"><span></span> AO VIVO</span>
+            </div>
+            <p id="live-status" class="live-status" role="status">Atualizado automaticamente.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th scope="col">#</th><th scope="col">Participante</th><th scope="col">Pontos</th></tr>
+                    </thead>
+                    <tbody id="ranking-body" data-ranking-url="{% url 'placar:ranking_json' %}">
+                        {% for participante in participantes %}
+                            <tr>
+                                <td class="rank-number">{{ forloop.counter|stringformat:"02d" }}</td>
+                                <td class="participant-name">{{ participante.nome }}</td>
+                                <td class="points">{{ participante.pontos }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr class="empty-row"><td colspan="3">Ainda não há participantes. Seja o primeiro!</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <footer>O placar é atualizado automaticamente.</footer>
+    </main>
+    <script src="{% static 'placar/ranking.js' %}" defer></script>
+</body>
+</html>
